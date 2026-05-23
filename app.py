@@ -1,7 +1,13 @@
+import os
 import streamlit as st
+
+# ── Load secrets FIRST before any other imports ──────────────
+if hasattr(st, 'secrets'):
+    os.environ.setdefault("GEMINI_API_KEY", st.secrets.get("GEMINI_API_KEY", ""))
+    os.environ.setdefault("GROQ_API_KEY", st.secrets.get("GROQ_API_KEY", ""))
+
 import time
 from rag_pipeline import load_and_chunk, build_vectorstore, load_vectorstore, ask
-import os
 
 # ── Page Config ──────────────────────────────────────────────
 st.set_page_config(
@@ -21,13 +27,6 @@ st.markdown("""
         border-radius: 10px;
         border: 1px solid #2d3148;
         margin: 5px 0;
-    }
-    .answer-box {
-        background: #1e2130;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 4px solid #0e9f6e;
-        margin: 10px 0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -76,37 +75,30 @@ with col1:
 with col2:
     st.markdown("### 💬 Ask a Question")
 
-    # Load index
     with st.spinner("Loading knowledge base..."):
         index, chunks = load_index()
     st.success(f"✅ Knowledge base loaded — {len(chunks)} chunks indexed")
 
-    # Chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Display chat history
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
             if "meta" in msg:
                 st.caption(f"⏱ {msg['meta']['latency']}s · 📄 {msg['meta']['chunks']} chunks retrieved")
 
-    # Input
     query = st.chat_input("Ask about loans, insurance, eligibility...")
 
-    # Handle sample button clicks
     if "query" in st.session_state and st.session_state.query:
         query = st.session_state.query
         st.session_state.query = None
 
     if query:
-        # Show user message
         with st.chat_message("user"):
             st.write(query)
         st.session_state.messages.append({"role": "user", "content": query})
 
-        # Get answer
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 start = time.time()
