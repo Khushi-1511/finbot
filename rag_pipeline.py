@@ -7,7 +7,7 @@ from pypdf import PdfReader
 from google import genai
 from groq import Groq
 
-load_dotenv()
+load_dotenv(override=True)
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
