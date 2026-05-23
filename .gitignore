@@ -1,0 +1,7 @@
+venv/
+.env
+faiss.index
+chunks.json
+__pycache__/
+*.pyc
+*.pyo
